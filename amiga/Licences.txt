@@ -1,0 +1,21 @@
+Infra Arcana: licences
+======================
+
+The game: Infra Arcana by Martin Törnqvist, a roguelike set in the world
+of H. P. Lovecraft, from gitlab.com/martin-tornqvist/ia (commit
+2693b3ca, version 23.0.0).
+
+- The code: AGPL-3.0-or-later (LICENSE.txt). The port's changes to it
+  (src/) are under the same licence; the source of this build is in
+  DalsinAI/amigainfraarcana on GitHub.
+- The pictures and tiles (gfx/): upstream's own, under LICENSE.txt; the
+  font pictures under LICENSE-FONTS.txt and LICENSE-FONT-DEJAVU.txt.
+- The sounds (audio/): each one's author and licence is in
+  LICENSE-AUDIO.txt (mostly Creative Commons, from freesound.org).
+- Bundled with the code: tinyxml2 (zlib licence, LICENSE-tinyxml2.txt)
+  and mINI (MIT, LICENSE-mINI.txt).
+- The Amiga port's own files (amiga/, AMIGA_PORT.md, package/, tools/,
+  tests/) are MIT, Copyright (c) 2026 AmiCradle Team. The GlowIcons are
+  drawn from upstream's icon/icon.ico.
+
+Designed, tested and delivered by The AmiCradle Team.

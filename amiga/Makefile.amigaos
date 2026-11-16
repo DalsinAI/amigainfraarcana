@@ -1,0 +1,265 @@
+# Infra Arcana for GFOS (AmigaOS 3.2 with GFOpenUp), 68040/68060 + FPU, on
+# GFOpenUp's SDL 2 (LIBS:GFOpenGPU/SDL2.module, SDL2_image.module and
+# SDL2_mixer.module).
+#
+#   make -f amiga/Makefile.amigaos -j4 [STOVE=/path/to/os32-gcc16-open6]
+#
+# STOVE is a GFOpenAmigaGCC 16.2.0-open6 stove: its prefix/ has the
+# compiler, the NDK and GFOpenGPU's SDL 2 kit (prefix/m68k-amigaos).
+# The sources are CMakeLists.txt's ia target (with upstream's bundled
+# tinyxml2 and mINI); the drawer listing and the current directory come from
+# amiga/amiga_dir.cpp, in place of std::filesystem.
+#
+# Output: build/amigaos/InfraArcana/ (the drawer: InfraArcana, upstream's
+# gfx/, audio/ and data/, User/, ReadMe, Controls, the manual and licences,
+# with GlowIcons), build/amigaos/InfraArcana.info and Install-InfraArcana
+# beside them.
+
+STOVE   ?= $(HOME)/AmiCradle/stoves/os32-gcc16-open6
+PREFIX  ?= $(STOVE)/prefix
+KIT     ?= $(PREFIX)/m68k-amigaos
+CXX     = $(PREFIX)/bin/m68k-amigaos-g++
+CC      = $(PREFIX)/bin/m68k-amigaos-gcc
+CPU     ?= -m68040 -m68881
+# -fno-tree-loop-distribute-patterns: GCC 16's loop miscompile (the kit's
+# sdl2-config gives it for GCC 16 too).
+OPT     ?= -O2 -fomit-frame-pointer -fno-tree-loop-distribute-patterns
+
+DEFS    = -D__amigaos__ -DNDEBUG
+INC     = -Iinclude -Iamiga -Ithird_party/tinyxml2 -Ithird_party/mINI-0.9.17/src/mini \
+          -I$(KIT)/include/SDL2 -I$(KIT)/include
+CXXFLAGS = -noixemul $(OPT) $(CPU) -std=c++17 $(DEFS) $(INC)
+CFLAGS  = -noixemul $(OPT) $(CPU) $(DEFS)
+LDFLAGS = -noixemul $(CPU)
+LIBS    = -L$(KIT)/lib -lSDL2_mixer -lSDL2_image -lSDL2 -lpthread -latomic -lm
+
+BUILD   = build/amigaos
+OBJDIR  = $(BUILD)/obj
+OUT     = $(BUILD)/InfraArcana
+PROG    = InfraArcana
+
+SRC     = src/ability_values.cpp \
+          src/actor.cpp \
+          src/actor_act.cpp \
+          src/actor_common.cpp \
+          src/actor_cycle_graphics.cpp \
+          src/actor_data.cpp \
+          src/actor_death.cpp \
+          src/actor_eat.cpp \
+          src/actor_factory.cpp \
+          src/actor_hear_sound.cpp \
+          src/actor_hit.cpp \
+          src/actor_items.cpp \
+          src/actor_mon.cpp \
+          src/actor_move.cpp \
+          src/actor_player.cpp \
+          src/actor_player_fov.cpp \
+          src/actor_player_state.cpp \
+          src/actor_see.cpp \
+          src/actor_sneak.cpp \
+          src/actor_start_turn.cpp \
+          src/actor_std_turn.cpp \
+          src/ai.cpp \
+          src/attack.cpp \
+          src/attack_data.cpp \
+          src/attack_melee.cpp \
+          src/attack_ranged.cpp \
+          src/audio_data.cpp \
+          src/auto_interact.cpp \
+          src/bash.cpp \
+          src/bot.cpp \
+          src/browser.cpp \
+          src/bsp.cpp \
+          src/character_descr.cpp \
+          src/close.cpp \
+          src/colors.cpp \
+          src/common_text.cpp \
+          src/config.cpp \
+          src/create_character.cpp \
+          src/debug.cpp \
+          src/direction.cpp \
+          src/disarm.cpp \
+          src/draw_blast.cpp \
+          src/draw_box.cpp \
+          src/draw_health_bars.cpp \
+          src/draw_map.cpp \
+          src/drop.cpp \
+          src/explosion.cpp \
+          src/flood.cpp \
+          src/fov.cpp \
+          src/game.cpp \
+          src/game_commands.cpp \
+          src/game_over.cpp \
+          src/game_over_summary.cpp \
+          src/game_summary_data.cpp \
+          src/game_time.cpp \
+          src/gfx.cpp \
+          src/gods.cpp \
+          src/highscore.cpp \
+          src/hints.cpp \
+          src/info_screen_state.cpp \
+          src/init.cpp \
+          src/insanity.cpp \
+          src/inventory.cpp \
+          src/inventory_handling.cpp \
+          src/item.cpp \
+          src/item_ammo.cpp \
+          src/item_armor.cpp \
+          src/item_curse.cpp \
+          src/item_data.cpp \
+          src/item_device.cpp \
+          src/item_explosive.cpp \
+          src/item_factory.cpp \
+          src/item_head.cpp \
+          src/item_misc.cpp \
+          src/item_potion.cpp \
+          src/item_rod.cpp \
+          src/item_scroll.cpp \
+          src/item_weapon.cpp \
+          src/knockback.cpp \
+          src/line_calc.cpp \
+          src/main_menu.cpp \
+          src/manual.cpp \
+          src/map.cpp \
+          src/map_builder.cpp \
+          src/map_builder_special.cpp \
+          src/map_builder_std.cpp \
+          src/map_controller.cpp \
+          src/map_mode_gui.cpp \
+          src/map_parsing.cpp \
+          src/map_templates.cpp \
+          src/map_travel.cpp \
+          src/mapgen_aux_rooms.cpp \
+          src/mapgen_bsp_split_rooms.cpp \
+          src/mapgen_chokepoint_data.cpp \
+          src/mapgen_connect_rooms.cpp \
+          src/mapgen_corridor.cpp \
+          src/mapgen_decorate.cpp \
+          src/mapgen_doors.cpp \
+          src/mapgen_doors_and_keys.cpp \
+          src/mapgen_merge_regions.cpp \
+          src/mapgen_put_inscribed_terrain.cpp \
+          src/mapgen_pylon.cpp \
+          src/mapgen_region.cpp \
+          src/mapgen_river.cpp \
+          src/mapgen_room.cpp \
+          src/mapgen_stairs.cpp \
+          src/mapgen_sub_rooms.cpp \
+          src/mapgen_utils.cpp \
+          src/mapgen_valuable_terrain.cpp \
+          src/marker.cpp \
+          src/messages.cpp \
+          src/minimap.cpp \
+          src/misc.cpp \
+          src/msg_log.cpp \
+          src/panel.cpp \
+          src/pathfind.cpp \
+          src/paths.cpp \
+          src/pickup.cpp \
+          src/player_bon.cpp \
+          src/player_spells.cpp \
+          src/populate_items.cpp \
+          src/populate_monsters.cpp \
+          src/populate_traps.cpp \
+          src/popup.cpp \
+          src/pos.cpp \
+          src/property.cpp \
+          src/property_data.cpp \
+          src/property_factory.cpp \
+          src/property_handler.cpp \
+          src/query.cpp \
+          src/random.cpp \
+          src/reload.cpp \
+          src/room.cpp \
+          src/room_auto_spawn_terrain.cpp \
+          src/saving.cpp \
+          src/smell.cpp \
+          src/sound.cpp \
+          src/spells.cpp \
+          src/state.cpp \
+          src/study_inscription.cpp \
+          src/teleport.cpp \
+          src/terrain.cpp \
+          src/terrain_data.cpp \
+          src/terrain_dmg.cpp \
+          src/terrain_door.cpp \
+          src/terrain_event.cpp \
+          src/terrain_factory.cpp \
+          src/terrain_gong.cpp \
+          src/terrain_mirror.cpp \
+          src/terrain_mob.cpp \
+          src/terrain_monolith.cpp \
+          src/terrain_pylon.cpp \
+          src/terrain_trap.cpp \
+          src/text.cpp \
+          src/text_format.cpp \
+          src/throwing.cpp \
+          src/time.cpp \
+          src/version.cpp \
+          src/view.cpp \
+          src/view_actor_descr.cpp \
+          src/viewport.cpp \
+          src/wpn_dmg.cpp \
+          src/xml.cpp \
+          third_party/tinyxml2/tinyxml2.cpp \
+          src/audio.cpp \
+          src/io.cpp \
+          src/io_animation.cpp \
+          src/io_coordinates.cpp \
+          src/io_draw_obj.cpp \
+          src/io_input.cpp \
+          src/io_primitives.cpp \
+          src/io_px_manip.cpp \
+          src/io_text.cpp \
+          src/io_window.cpp \
+          src/main.cpp \
+          amiga/amiga_dir.cpp \
+          amiga/amiga_start.cpp
+# lgamma() for std::binomial_distribution: libnix's libm has none.
+CSRC    = amiga/lgamma.c
+OBJS    = $(SRC:%.cpp=$(OBJDIR)/%.o) $(CSRC:%.c=$(OBJDIR)/%.o)
+
+DOCS    = manual.txt credits.txt release_history.txt contact.txt LICENSE.txt \
+          LICENSE-AUDIO.txt LICENSE-FONTS.txt LICENSE-FONT-DEJAVU.txt
+
+all: $(OUT)/$(PROG) package
+
+$(OUT)/$(PROG): $(OBJS)
+	@mkdir -p $(OUT)
+	$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+
+package: $(OUT)/$(PROG) AMIGA_PORT.md amiga/Licences.txt amiga/Controls
+	mkdir -p $(OUT)/User
+	rm -rf $(OUT)/gfx $(OUT)/audio $(OUT)/data
+	cp -R installed_files/gfx $(OUT)/gfx
+	cp -R installed_files/audio $(OUT)/audio
+	cp -R installed_files/data $(OUT)/data
+	git log -1 --format=%h > $(OUT)/data/git-sha1.txt 2>/dev/null || true
+	for f in $(DOCS); do cp installed_files/$$f $(OUT)/$$f; \
+	    cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done
+	cp third_party/mINI-0.9.17/LICENSE $(OUT)/LICENSE-mINI.txt
+	cp third_party/tinyxml2/LICENSE.txt $(OUT)/LICENSE-tinyxml2.txt
+	cp amiga/Controls $(OUT)/Controls
+	cp AMIGA_PORT.md $(OUT)/ReadMe
+	cp amiga/Licences.txt $(OUT)/Licences.txt
+	cp amiga/icons/InfraArcana.info amiga/icons/ReadMe.info $(OUT)/
+	for f in Controls Licences.txt LICENSE-mINI.txt LICENSE-tinyxml2.txt; do \
+	    cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done
+	cp amiga/icons/Data.info $(OUT)/User.info
+	cp amiga/icons/InfraArcana-drawer.info $(BUILD)/InfraArcana.info
+	cp amiga/Install-InfraArcana amiga/Install-InfraArcana.info $(BUILD)/
+
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+objs: $(OBJS)
+
+clean:
+	rm -rf $(BUILD)
+
+.PHONY: all package objs clean

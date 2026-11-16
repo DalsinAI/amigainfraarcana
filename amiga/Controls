@@ -1,0 +1,28 @@
+Infra Arcana: controls
+======================
+
+The game's own keys, as in its manual (manual.txt in this drawer, or ?
+in the game). Options (=) changes them; they are kept in the drawer's
+User drawer.
+
+Moving
+  Numeric keypad     move in eight directions; 5 waits a turn
+  Cursor keys        move; Shift + left/right moves up left/right,
+                     Ctrl + left/right moves down left/right
+  Shift + move       run until something happens
+  . (full stop)      wait a turn
+
+The most used
+  i                  inventory          a   use or drink
+  f                  aim and fire       r   reload
+  g or ,             pick up            t   throw
+  k or w             kick               x   cast a spell
+  c                  close a door       v   look
+  m                  map                Tab melee the nearest monster
+  Esc                the in-game menu, or back
+  Return             choose in a menu   Space  go on
+  ?                  the manual         =   options
+  Q                  quit (the game is saved when you leave by the menu)
+
+The A1200 and A600 keyboards have no keypad: the cursor keys and Shift or
+Ctrl do the diagonals.

@@ -1,0 +1,14 @@
+{
+  "name": "InfraArcana",
+  "version": "23.0-gfos1",
+  "drawer": "InfraArcana",
+  "program": "InfraArcana",
+  "cpu": "68040",
+  "fpu": true,
+  "space": 50000000,
+  "modules": ["SDL2.module", "SDL2_image.module", "SDL2_mixer.module"],
+  "keep": ["User"],
+  "parent": "Work:Games",
+  "badge": "icons/art/infraarcana.png",
+  "script": "Install-InfraArcana"
+}

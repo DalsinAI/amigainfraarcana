@@ -9,6 +9,10 @@
 #include <algorithm>
 #include <cstddef>
 #include <filesystem>
+
+#ifdef __amigaos__
+#include "amiga_dir.hpp"
+#endif
 #include <fstream>
 #include <iterator>
 #include <memory>
@@ -182,6 +186,14 @@ static void find_fonts_from_filesystem()
 
     TRACE << "Finding font images at '" << paths::fonts_dir() << "'" << "\n";
 
+#ifdef __amigaos__
+    // AmigaOS: the drawer is listed through dos.library (amiga/amiga_dir.cpp).
+    for (const std::string& filename : amiga_list_files(paths::fonts_dir())) {
+        if (filename.size() < 4 ||
+            filename.compare(filename.size() - 4, 4, ".png") != 0) {
+            continue;
+        }
+#else
     for (const auto& entry : std::filesystem::directory_iterator(paths::fonts_dir())) {
         if (!entry.is_regular_file()) {
             continue;
@@ -193,6 +205,7 @@ static void find_fonts_from_filesystem()
         }
 
         const std::string filename = entry.path().filename().string();
+#endif  // __amigaos__
 
         const P dims = parse_dims_from_font_name(filename);
 

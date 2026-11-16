@@ -6,8 +6,10 @@
 
 #include "paths.hpp"
 
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <ostream>
 #include <queue>
 #include <string>
@@ -17,6 +19,10 @@
 #include "ini.h"
 #include "io.hpp"
 #include "version.hpp"
+
+#ifdef __amigaos__
+#include <sys/stat.h>
+#endif
 
 // -----------------------------------------------------------------------------
 // Private
@@ -32,6 +38,39 @@ const static std::string s_user_data_ini_file_name = "user_data.ini";
 static bool ensure_writable_location(const std::string& path)
 {
     TRACE_FUNC_BEGIN;
+
+#ifdef __amigaos__
+    // AmigaOS: libnix has no std::filesystem underneath, and the only user
+    // data directory is the drawer's own User (one level, made here).
+    {
+        std::string dir = path;
+
+        while (!dir.empty() && dir.back() == '/') {
+            dir.pop_back();
+        }
+
+        mkdir(dir.c_str(), 0755);
+
+        const std::string temp_file_path = dir + "/test.tmp";
+
+        std::ofstream temp_file(temp_file_path, std::ios::out | std::ios::trunc);
+
+        if (!temp_file.is_open()) {
+            TRACE_FUNC_END;
+
+            return false;
+        }
+
+        temp_file << "test";
+        temp_file.close();
+
+        std::remove(temp_file_path.c_str());
+
+        TRACE_FUNC_END;
+
+        return true;
+    }
+#endif  // __amigaos__
 
     TRACE
         << "Creating directories and testing if directory is writable: '"
@@ -164,6 +203,25 @@ void init()
         << " for user data"
         << "\n";
 
+#ifdef __amigaos__
+    // AmigaOS: user data always lives in the game drawer's User directory
+    // (the program has made PROGDIR: its current directory, see
+    // amiga/amiga_start.cpp), where the Installer keeps it on an update.
+    {
+        std::string amiga_user_dir = "User/";
+
+        if (!ensure_writable_location(amiga_user_dir)) {
+            add_error_msg_no_directory_writable();
+        }
+
+        s_user_dir = amiga_user_dir;
+
+        TRACE_FUNC_END;
+
+        return;
+    }
+#endif  // __amigaos__
+
     std::string user_dir = read_user_dir_from_ini_file();
 
     TRACE
@@ -280,22 +338,22 @@ std::string gfx_dir()
 
 std::string fonts_dir()
 {
-    return gfx_dir() + "/fonts/";
+    return gfx_dir() + "fonts/";
 }
 
 std::string tiles_dir()
 {
-    return gfx_dir() + "/tiles/20x20/";
+    return gfx_dir() + "tiles/20x20/";
 }
 
 std::string images_dir()
 {
-    return gfx_dir() + "/images/";
+    return gfx_dir() + "images/";
 }
 
 std::string logo_img_path()
 {
-    return images_dir() + "/main_menu_logo.png";
+    return images_dir() + "main_menu_logo.png";
 }
 
 std::string audio_dir()
@@ -310,7 +368,7 @@ std::string data_dir()
 
 std::string messages_dir()
 {
-    return data_dir() + "/messages/";
+    return data_dir() + "messages/";
 }
 
 }  // namespace paths
