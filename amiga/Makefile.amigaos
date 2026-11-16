@@ -19,6 +19,7 @@ STOVE   ?= $(HOME)/AmiCradle/stoves/os32-gcc16-open6
 PREFIX  ?= $(STOVE)/prefix
 KIT     ?= $(PREFIX)/m68k-amigaos
 CXX     = $(PREFIX)/bin/m68k-amigaos-g++
+CC      = $(PREFIX)/bin/m68k-amigaos-gcc
 CPU     ?= -m68040 -m68881
 # -fno-tree-loop-distribute-patterns: GCC 16's loop miscompile (the kit's
 # sdl2-config gives it for GCC 16 too).
@@ -28,6 +29,7 @@ DEFS    = -D__amigaos__ -DNDEBUG
 INC     = -Iinclude -Iamiga -Ithird_party/tinyxml2 -Ithird_party/mINI-0.9.17/src/mini \
           -I$(KIT)/include/SDL2 -I$(KIT)/include
 CXXFLAGS = -noixemul $(OPT) $(CPU) -std=c++17 $(DEFS) $(INC)
+CFLAGS  = -noixemul $(OPT) $(CPU) $(DEFS)
 LDFLAGS = -noixemul $(CPU)
 LIBS    = -L$(KIT)/lib -lSDL2_mixer -lSDL2_image -lSDL2 -lpthread -latomic -lm
 
@@ -213,7 +215,9 @@ SRC     = src/ability_values.cpp \
           src/main.cpp \
           amiga/amiga_dir.cpp \
           amiga/amiga_start.cpp
-OBJS    = $(SRC:%.cpp=$(OBJDIR)/%.o)
+# lgamma() for std::binomial_distribution: libnix's libm has none.
+CSRC    = amiga/lgamma.c
+OBJS    = $(SRC:%.cpp=$(OBJDIR)/%.o) $(CSRC:%.c=$(OBJDIR)/%.o)
 
 DOCS    = manual.txt credits.txt release_history.txt contact.txt LICENSE.txt \
           LICENSE-AUDIO.txt LICENSE-FONTS.txt LICENSE-FONT-DEJAVU.txt
@@ -244,6 +248,10 @@ package: $(OUT)/$(PROG) AMIGA_PORT.md amiga/Licences.txt amiga/Controls
 	cp amiga/icons/Data.info $(OUT)/User.info
 	cp amiga/icons/InfraArcana-drawer.info $(BUILD)/InfraArcana.info
 	cp amiga/Install-InfraArcana amiga/Install-InfraArcana.info $(BUILD)/
+
+$(OBJDIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)

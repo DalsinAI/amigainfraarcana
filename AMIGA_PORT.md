@@ -69,6 +69,9 @@ What was changed
   first (amiga_enter_progdir), so gfx/, audio/, data/ and User/ are found
   when it is started from a Shell elsewhere; the Shell's directory comes
   back when the game exits.
+- amiga/lgamma.c: lgamma(), which libstdc++'s std::binomial_distribution
+  (src/random.cpp) needs and libnix's maths library lacks (Lanczos, about
+  15 digits); tests/host/test_lgamma.c checks it against the host's.
 - amiga/amiga_start.cpp: a 1 MB stack and the $VER string.
 - Nothing else in the game is changed; tinyxml2 and mINI are upstream's
   bundled copies.
