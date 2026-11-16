@@ -27,3 +27,5 @@ GTAGS
 
 # Temporary files
 tmp/
+build/
+__pycache__/

@@ -18,6 +18,10 @@
 #undef main
 #endif
 
+#ifdef __amigaos__
+#include "amiga_dir.hpp"
+#endif
+
 // -----------------------------------------------------------------------------
 // Private
 // -----------------------------------------------------------------------------
@@ -53,6 +57,11 @@ static void handle_args(int argc, char** argv)
 int main(int argc, char** argv)
 {
     TRACE_FUNC_BEGIN;
+
+#ifdef __amigaos__
+    // The game reads gfx/, audio/ and data/ relative to its own drawer.
+    amiga_enter_progdir();
+#endif
 
     rnd::seed();
 
